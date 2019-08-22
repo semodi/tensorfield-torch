@@ -20,9 +20,9 @@ def difference_matrix(geometry):
         Relative vector matrix with shape [N, N, 3]
     """
     # [N, 1, 3]
-    ri = geometry.unsqueeze(1)
+    ri = geometry.unsqueeze(-2)
     # [1, N, 3]
-    rj = geometry.unsqueeze(0)
+    rj = geometry.unsqueeze(-3)
     # [N, N, 3]
     rij = ri - rj
     return rij

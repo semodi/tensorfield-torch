@@ -43,9 +43,9 @@ def unit_vectors(v, axis=-1):
 def Y_2(rij):
     # rij : [N, N, 3]
     # x, y, z : [N, N]
-    x = rij[:, :, 0]
-    y = rij[:, :, 1]
-    z = rij[:, :, 2]
+    x = rij[..., 0]
+    y = rij[..., 1]
+    z = rij[..., 2]
     r2 = torch.max(torch.sum(rij**2, dim=-1), EPSILON)
     # return : [N, N, 5]
     output = torch.stack([x * y / r2,
@@ -87,7 +87,7 @@ class F(nn.Module):
 
         radial = self.radial(rbf_input)
         dij = torch.norm(rij, dim=-1)
-        condition = (dij < EPSILON).unsqueeze(-1).repeat(1, 1, self.output_dim)
+        condition = (dij < EPSILON).unsqueeze(-1).repeat(1, 1, 1, self.output_dim)
         masked_radial = torch.where(condition, torch.zeros_like(radial),
             radial)
         return self.rep(rij).unsqueeze(-2) * masked_radial.unsqueeze(-1)
@@ -133,17 +133,17 @@ class Filter(nn.Module):
 
     def forward(self, layer_input, rbf_input, rij):
         cg = self.cg
-        return torch.einsum('ijk,abfj,bfk->afi', cg, self.F_out(rbf_input, rij),
+        return torch.einsum('ijk,zabfj,zbfk->zafi', cg, self.F_out(rbf_input, rij),
             layer_input)
 
     def forward_00(self, layer_input, rbf_input, rij):
         cg = torch.eye(layer_input.size()[-1]).unsqueeze(-2)
-        return torch.einsum('ijk,abfj,bfk->afi', cg, self.F_out(rbf_input, rij),
+        return torch.einsum('ijk,zabfj,zbfk->zafi', cg, self.F_out(rbf_input, rij),
             layer_input)
 
     def forward_1(self, layer_input, rbf_input, rij):
         cg = self.cg[layer_input.size()[-1]]
-        return torch.einsum('ijk,abfj,bfk->afi', cg, self.F_out(rbf_input, rij),
+        return torch.einsum('ijk,zabfj,zbfk->zafi', cg, self.F_out(rbf_input, rij),
             layer_input)
 
 
@@ -250,8 +250,8 @@ class SelfInteractionLayer(nn.Module):
     def later_forward(self, layer_input):
         # Size (number of channels) needs to be inferred from input here
 
-        return (torch.einsum('afi,gf->aig',
-            layer_input, self.weight) + self.bias).permute(0, 2, 1)
+        return (torch.einsum('zafi,gf->zaig',
+            layer_input, self.weight) + self.bias).permute(0,1, 3, 2)
 
 
 class SelfInteraction(nn.Module):
