@@ -116,26 +116,33 @@ class Filter(nn.Module):
         self.l_filter = l_filter
         self.l_out = l_out
 
+
         if l_out == 0:
             if l_filter == 0:
                 self.cg = None
+                self.forward = self.forward_00
             elif l_filter == 1:
                 self.cg = torch.eye(3).unsqueeze(0)
         elif l_out == 1:
             self.cg = {1 : torch.eye(3).unsqueeze(-1), 3 : self.eijk}
+            self.forward = self.forward_1
         elif l_out == 2:
             self.cg = torch.eye(5).unsqueeze(-1)
         else:
             raise ValueError('l2 = {} not implemented'.format(l2))
 
     def forward(self, layer_input, rbf_input, rij):
+        cg = self.cg
+        return torch.einsum('ijk,abfj,bfk->afi', cg, self.F_out(rbf_input, rij),
+            layer_input)
 
-        if self.l_out == 0 and self.l_filter ==0:
-            cg = torch.eye(layer_input.size()[-1]).unsqueeze(-2)
-        elif self.l_out == 1:
-            cg = self.cg[layer_input.size()[-1]]
-        else:
-            cg = self.cg
+    def forward_00(self, layer_input, rbf_input, rij):
+        cg = torch.eye(layer_input.size()[-1]).unsqueeze(-2)
+        return torch.einsum('ijk,abfj,bfk->afi', cg, self.F_out(rbf_input, rij),
+            layer_input)
+
+    def forward_1(self, layer_input, rbf_input, rij):
+        cg = self.cg[layer_input.size()[-1]]
         return torch.einsum('ijk,abfj,bfk->afi', cg, self.F_out(rbf_input, rij),
             layer_input)
 
