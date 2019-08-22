@@ -50,9 +50,9 @@ def Y_2(rij):
     # return : [N, N, 5]
     output = torch.stack([x * y / r2,
                        y * z / r2,
-                       (-tf.square(x) - tf.square(y) + 2. * tf.square(z)) / (2 * sqrt(3) * r2),
+                       (-x**2 - y**2 + 2. * z**2) / (2 * sqrt(3) * r2),
                        z * x / r2,
-                       (tf.square(x) - tf.square(y)) / (2. * r2)],
+                       (x**2 - y**2) / (2. * r2)],
                       dim=-1)
     return output
 
@@ -75,7 +75,7 @@ class F(nn.Module):
             self.rep = unit_vectors
             self.forward = self.forward_rep
         elif l == 2:
-            self.rep == Y_2
+            self.rep = Y_2
             self.forward = self.forward_rep
 
     def forward_no_rep(self, rbf_input, rij):
