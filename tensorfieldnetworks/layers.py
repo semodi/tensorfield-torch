@@ -5,12 +5,44 @@ import numpy as np
 from tensorfieldnetworks import utils
 from .utils import FLOAT_TYPE, EPSILON
 from torch import nn as nn
-from schnetpack.nn import Dense
 from torch.nn.parameter import Parameter
 from torch.nn import init
 from torch.nn import functional
+from torch.nn.init import xavier_uniform_
+from schnetpack.nn.initializers import zeros_initializer
 CONSTANT_BIAS = 0.0
 
+class Dense(torch.nn.Linear):
+    def __init__(self, input_dim, output_dim, bias=True, activation=None,
+                 weight_init=xavier_uniform_, bias_init=zeros_initializer):
+        self.weight_init = weight_init
+        self.bias_init = bias_init
+        self.activation = activation
+
+        super(Dense, self).__init__(input_dim, output_dim, bias)
+
+    def reset_parameters(self):
+        """
+        Reinitialize model parameters.
+        """
+        self.weight_init(self.weight)
+        if self.bias is not None:
+            self.bias_init(self.bias)
+
+    def forward(self, inputs):
+        """
+        Args:
+            inputs (dict of torch.Tensor): SchNetPack format dictionary of input tensors.
+
+        Returns:
+            torch.Tensor: Output of the dense layer.
+        """
+        y = super(Dense, self).forward(inputs)
+        if self.activation:
+            y = self.activation(y)
+
+        return y
+        
 class R(nn.Module):
 
     def __init__(self, input_dim, nonlin= functional.relu, hidden_dim=None, output_dim=1,
