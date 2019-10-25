@@ -9,7 +9,7 @@ from torch.nn.parameter import Parameter
 from torch.nn import init
 from torch.nn import functional
 from torch.nn.init import xavier_uniform_
-from schnetpack.nn.initializers import zeros_initializer
+from torch.nn.init import zeros_ as zeros_initializer
 CONSTANT_BIAS = 0.0
 
 class Dense(torch.nn.Linear):
@@ -42,7 +42,7 @@ class Dense(torch.nn.Linear):
             y = self.activation(y)
 
         return y
-        
+
 class R(nn.Module):
 
     def __init__(self, input_dim, nonlin= functional.relu, hidden_dim=None, output_dim=1,
