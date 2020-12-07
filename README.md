@@ -1,4 +1,4 @@
-WARNING: This package is deprecated. I recommend using the official PyTorch implemenation, available as [E3NN](https://github.com/e3nn/e3nn)
+WARNING: This package is deprecated. I recommend using the PyTorch implemenation created by the authors, available as [E3NN](https://github.com/e3nn/e3nn)
 
 # tensorfield-torch
 This is a PyTorch implementation of the idea presented in the paper
